@@ -1,12 +1,11 @@
-require("dotenv").config();
+require('dotenv').config();
 const express = require('express')
-const connectToDB = require("./config/db");
-const Pokemon = require('./models/PokeSchema');
-const mongoose = require('mongoose');
-const React = require('react');
-
 const app = express()
-const PORT = 3000
+const port = 3000
+// const pokemon = require('./models/pokemon');
+const React = require('react');
+const Pokemon = require('./models/PokeSchema');
+const connectToDB = require('./config/db');
 
 //=============Configuring Engine
 app.set('view engine', 'jsx');
@@ -27,25 +26,49 @@ app.use(express.urlencoded({extended: false}));
 
 // Home Route
 app.get('/', (req, res) => {
-  res.send('Welcome to the Pokemon App!')
+  res.send('Hello World!')
 })
 
 // Index Route
-app.get('/pokemon', async (req, res) => {
-    const allPokemon = await Pokemon.find();
-    res.render('Index', {pokemon: allPokemon});
+app.get('/pokemon', (req, res) => {
+    Pokemon.find({}, (error, allPokemon) => {
+      res.render('Index', {Pokemon: allPokemon});
+    })
+    // Pokemon.find({}, (error, allPoke) => {
+      // res.render('Index', {Pokemons: allPoke});
+    });
+// });
+
+/**
+ * New Route
+ */
+app.get('/pokemon/new', (req, res) => {
+  res.render('New');
 });
 
+/**
+ * POST method
+ */
+app.post('/pokemon', (req, res) => {
+  console.log(req.body);
+  Pokemon.create(req.body).then(Pokemon => {
+    res.redirect('/pokemon')
+  }).catch((error) => {
+    console.error(error)
+  })
+})
+
 // Show Route
-app.get('/pokemon/:id', async (req, res) => {
-    const foundPoke = await Pokemon.findById(req.params.id);
-    res.render('Show', { pokemon: foundPoke });
+app.get("/pokemon/:id", (req, res) => {
+    Pokemon.findById(req.params.id, (error, foundPokemon) => {
+      res.render("Show", { Pokemon: foundPokemon });
+    });
   });
 
 
 
 
 app.listen(port, () => {
-    console.log(`Whose that Pokemon ${port}`);
-    connectToDB();
-  });
+  console.log(`Example app listening on port ${port}`);
+  connectToDB();
+});
